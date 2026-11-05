@@ -1,0 +1,22 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Trips live under the owner's uid. The owner can read and delete them.
+    // Nobody can create or edit them from the browser: only the server
+    // (Firebase Admin SDK, which bypasses these rules) writes validated trips.
+    match /users/{uid}/trips/{tripId} {
+      allow read, delete: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if false;
+    }
+
+    // Server-only bookkeeping (daily quota counters and the shared trip cache).
+    match /usage/{docId}     { allow read, write: if false; }
+    match /tripCache/{docId} { allow read, write: if false; }
+
+    // Everything else is denied.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
