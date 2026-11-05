@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="180" height="40" viewBox="0 0 180 40" role="img" aria-label="Musafir.ai">
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="40" viewBox="0 0 180 40" role="img" aria-label="TripForge">
   <circle cx="20" cy="20" r="18" fill="#f56551"/>
   <path d="M10 21.5 30 11l-6 20-5-8z" fill="#ffffff"/>
   <path d="M19 23 30 11" stroke="#f56551" stroke-width="1.6" fill="none"/>
-  <text x="46" y="27" font-family="system-ui, -apple-system, sans-serif" font-size="20" font-weight="800" fill="#111111">Musafir<tspan fill="#f56551">.ai</tspan></text>
+  <text x="46" y="27" font-family="system-ui, -apple-system, sans-serif" font-size="20" font-weight="800" fill="#111111">Trip<tspan fill="#f56551">Forge</tspan></text>
 </svg>

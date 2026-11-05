@@ -10,7 +10,7 @@ function Header() {
   return (
     <header className='p-3 shadow-sm flex justify-between items-center px-5'>
       <Link to='/'>
-        <img src='/logo.svg' alt='Musafir.ai' />
+        <img src='/logo.svg' alt='TripForge' />
       </Link>
 
       <div>

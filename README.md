@@ -1,4 +1,4 @@
-# Musafir.ai · AI Travel Planner
+# TripForge · AI Travel Planner
 
 Tell the app where you are going, for how many days, with what budget and who. It plans hotels and a day-by-day itinerary with Gemini and shows real photos from Google Places. Trips are private to your Google account.
 

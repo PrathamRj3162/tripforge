@@ -8,7 +8,7 @@ function Hero() {
         <span className='text-[#f56551]'>Discover Your Next Adventure with AI:</span> Personalized Itineraries at Your Fingertips
       </h1>
       <p className='text-lg md:text-xl text-gray-500 text-center'>
-        Every traveler deserves a plan. Your personal AI travel curator creating custom itineraries tailored to your budget and travel style.
+        Forge your next trip in seconds. Your personal AI travel curator creating custom itineraries tailored to your budget and travel style.
       </p>
 
       <Button asChild>
