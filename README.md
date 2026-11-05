@@ -2,7 +2,7 @@
 
 Tell the app where you are going, for how many days, with what budget and who. It plans hotels and a day-by-day itinerary with Gemini and shows real photos from Google Places. Trips are private to your Google account.
 
-> **Live demo:** [musafir-ai-mu.vercel.app](https://musafir-ai-mu.vercel.app/) &nbsp;|&nbsp; **GitHub:** [github.com/PrathamRj3162/tripforge](https://github.com/PrathamRj3162/tripforge)
+> **Live demo:** [tripforge-hub.vercel.app](https://tripforge-hub.vercel.app/) &nbsp;|&nbsp; **GitHub:** [github.com/PrathamRj3162/tripforge](https://github.com/PrathamRj3162/tripforge)
 
 Built by **Pratham Raj**. Architecture and flow designed with React, Gemini, and Firebase. The server proxy, Firebase Auth, Firestore rules, AI-output validation, quota, caching, tests and CI are custom engineering additions.
 
