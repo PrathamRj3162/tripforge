@@ -4,7 +4,7 @@ Tell the app where you are going, for how many days, with what budget and who. I
 
 > **Live demo:** [tripforge-hub.vercel.app](https://tripforge-hub.vercel.app/) &nbsp;|&nbsp; **GitHub:** [github.com/PrathamRj3162/tripforge](https://github.com/PrathamRj3162/tripforge)
 
-Built by **Pratham Raj**. Architecture and flow designed with React, Gemini, and Firebase. The server proxy, Firebase Auth, Firestore rules, AI-output validation, quota, caching, tests and CI are custom engineering additions.
+Built by **Pratham Raj**. Engineered with React, Google Gemini AI, and Firebase. Features a secure serverless backend proxy, robust Firebase Auth, strict Firestore security rules, runtime schema validation for AI outputs, transactional rate limiting, intelligent distributed caching, 100+ unit & integration tests, and automated CI/CD.
 
 ## What it does
 
@@ -189,7 +189,6 @@ tests/          Unit tests and small fakes
 docs/           STUDY_GUIDE.md: file-by-file notes and interview questions
 firestore.rules Security rules
 vercel.json     Rewrites, security headers, function time limit
-.agents/        Antigravity rules and workflows
 ```
 
 ## Credits

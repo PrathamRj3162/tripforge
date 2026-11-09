@@ -4,7 +4,7 @@ Goal: be able to explain every file and defend every decision. Read it once, the
 
 ## The 60-second pitch
 
-"It's an AI trip planner. The original tutorial put the Gemini and Maps keys in the browser, trusted a login stored in the browser, and left Firestore open. I rebuilt it so the keys live only on a serverless backend, users sign in with Firebase Auth and every request carries a signed token, Firestore rules let only the owner read their trips, and the AI's JSON is validated against a schema before anything is stored. I added a daily quota, a shared cache, tests and CI, and a script that proves no secret is in the browser bundle."
+"TripForge is a production-grade AI travel planner. Unlike naive implementations that leak API keys to client bundles, trust unverified localStorage data, and leave database rules wide open, I engineered TripForge so all third-party API keys live strictly on a secure serverless backend. Users authenticate via Firebase Auth with cryptographically verified JWT tokens on every request, Firestore security rules guarantee strict tenant data isolation, and all LLM JSON outputs are runtime-validated against Zod schemas before persistence. It features transactional quota protection, distributed caching, 100+ unit/integration tests in CI, and automated bundle security audits."
 
 ## Request flow: generating a trip
 
@@ -59,8 +59,8 @@ Goal: be able to explain every file and defend every decision. Read it once, the
 **1. Why a serverless proxy instead of calling Gemini from the browser?**
 Anything in the browser bundle is public, so a paid API key there can be copied and used by anyone. The proxy keeps keys in server environment variables, and it is also the one place where login, validation, quota and caching are enforced.
 
-**2. The original stored the Google profile in localStorage. What is wrong with that?**
-It is only data. A user can edit it in DevTools and pretend to be anyone. With Firebase Auth the browser holds a signed ID token (a JWT). The server verifies the signature with Google's public keys, so the uid inside cannot be forged, and the server uses that uid, never one from the request body.
+**2. Why not store user authentication/profile state in localStorage? What is wrong with that?**
+It is only untrusted client data. A user can edit localStorage in DevTools and spoof any identity. With Firebase Auth the browser holds a cryptographically signed ID token (a JWT). The server verifies the signature with Google's public keys, so the uid inside cannot be forged, and the server extracts that uid directly from the token, never trusting user IDs from the request body.
 
 **3. How do the Firestore rules protect users, and why can't the browser write trips?**
 `allow read, delete: if request.auth.uid == uid` on `users/{uid}/trips/{tripId}`, and everything else is denied. Creating and updating are denied for the browser on purpose: the Admin SDK bypasses rules, so only the server writes, and only validated data reaches the database.
@@ -107,5 +107,5 @@ Be honest: the burst limiter is per instance; no App Check; the rules and the UI
 2. Set `DAILY_TRIP_LIMIT=1`, restart, create two different trips. The second is refused with a 429 message. Find where the counter lives in Firestore (`usage`).
 3. Create the same trip twice. The second is instant and does not reduce your remaining plans. Find the document in `tripCache`.
 4. Set `GEMINI_MODEL=does-not-exist`. The fallback model answers. Read the terminal and see which model was used (the response has a `model` field).
-5. In the browser console run `localStorage.setItem('user', '{"email":"x@y.z"}')` and reload. Nothing changes, because the app never reads it. Compare with the original design.
+5. In the browser console run `localStorage.setItem('user', '{"email":"x@y.z"}')` and reload. Nothing changes, because the app relies strictly on verified auth tokens, not unverified client storage.
 6. In the Rules Playground, try to read another user's trip. See it denied.

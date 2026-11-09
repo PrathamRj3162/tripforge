@@ -115,8 +115,3 @@ test('the pinned frameworks are the ones this project was built for', () => {
   for (const script of ['dev', 'build', 'test', 'check', 'doctor', 'audit:bundle', 'encode:sa']) assert.ok(pkg.scripts[script], script)
 })
 
-test('Antigravity rule and workflow files stay under its 12,000 character limit', () => {
-  for (const file of sourceFiles(['.agents'], /\.md$/)) {
-    assert.ok(fs.readFileSync(file, 'utf8').length < 12_000, path.relative(root, file))
-  }
-})
