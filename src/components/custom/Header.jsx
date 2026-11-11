@@ -8,41 +8,45 @@ function Header() {
   const { user, loading, signIn, signOut } = useAuth()
 
   return (
-    <header className='p-3 shadow-sm flex justify-between items-center px-5'>
-      <Link to='/'>
-        <img src='/logo.svg' alt='TripForge' />
+    <header className='sticky top-0 z-50 bg-white/80 backdrop-blur border-b border-gray-100 px-5 py-3 flex justify-between items-center'>
+      <Link to='/' className='flex items-center gap-2 shrink-0'>
+        <img src='/logo.svg' alt='TripForge' className='h-9' />
       </Link>
 
       <div>
         {loading ? null : user ? (
           <div className='flex flex-wrap items-center justify-end gap-2 sm:gap-3'>
-            <Button asChild variant='outline' className='rounded-full'>
-              <Link to='/create-trip'>+ Create Trip</Link>
+            <Button asChild variant='ghost' size='sm' className='rounded-full hidden sm:inline-flex'>
+              <Link to='/create-trip'>+ New Trip</Link>
             </Button>
-            <Button asChild variant='outline' className='rounded-full'>
+            <Button asChild variant='outline' size='sm' className='rounded-full'>
               <Link to='/my-trips'>My Trips</Link>
             </Button>
             <Popover>
               <PopoverTrigger aria-label='Account menu'>
                 {user.photoURL ? (
-                  <img src={user.photoURL} alt='' referrerPolicy='no-referrer' className='h-[35px] w-[35px] rounded-full' />
+                  <img src={user.photoURL} alt='' referrerPolicy='no-referrer' className='h-9 w-9 rounded-full ring-2 ring-[#f56551]/30' />
                 ) : (
-                  <span className='flex h-[35px] w-[35px] items-center justify-center rounded-full bg-gray-200 text-sm font-medium'>
+                  <span className='flex h-9 w-9 items-center justify-center rounded-full bg-[#f56551] text-sm font-bold text-white'>
                     {(user.displayName || user.email || '?')[0].toUpperCase()}
                   </span>
                 )}
               </PopoverTrigger>
-              <PopoverContent className='w-56'>
-                <p className='truncate text-sm font-medium'>{user.displayName}</p>
-                <p className='truncate text-xs text-gray-500'>{user.email}</p>
-                <button type='button' className='mt-3 text-sm text-red-600' onClick={signOut}>Logout</button>
+              <PopoverContent className='w-56 p-3'>
+                <p className='truncate text-sm font-semibold'>{user.displayName}</p>
+                <p className='truncate text-xs text-gray-500 mt-0.5'>{user.email}</p>
+                <div className='mt-3 border-t pt-3'>
+                  <button type='button' className='text-sm text-red-600 hover:underline' onClick={signOut}>
+                    Sign out
+                  </button>
+                </div>
               </PopoverContent>
             </Popover>
           </div>
         ) : (
           <Button onClick={signIn} className='flex gap-2 items-center'>
             <FcGoogle className='h-5 w-5' />
-            Sign In
+            Sign In with Google
           </Button>
         )}
       </div>

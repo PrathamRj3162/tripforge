@@ -1,12 +1,14 @@
 import HotelCardItem from './HotelCardItem'
 
 function Hotels({ trip }) {
-  return (
-    <div>
-      <h2 className='font-bold text-xl mt-5'>Hotel Recommendation</h2>
+  if (!trip.plan?.hotels?.length) return null
 
-      <div className='grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-5'>
-        {trip.plan?.hotels?.map((hotel, index) => (
+  return (
+    <div className='my-10'>
+      <h2 className='font-bold text-xl text-gray-900 mb-1'>🏨 Hotel Recommendations</h2>
+      <p className='text-sm text-gray-500 mb-5'>Click any hotel to open it in Google Maps.</p>
+      <div className='grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4'>
+        {trip.plan.hotels.map((hotel, index) => (
           <HotelCardItem hotel={hotel} destination={trip.destination} key={index} />
         ))}
       </div>

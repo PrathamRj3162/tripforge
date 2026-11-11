@@ -41,30 +41,52 @@ function MyTrips() {
   }
 
   return (
-    <div className='sm:px-10 md:px-32 lg:px-56 xl:px-72 px-5 mt-10'>
-      <h2 className='font-bold text-3xl'>My Trips</h2>
+    <div className='sm:px-10 md:px-32 lg:px-56 xl:px-72 px-5 mt-10 pb-20'>
+      {/* Page header */}
+      <div className='flex items-center justify-between mb-8'>
+        <div>
+          <h2 className='font-bold text-3xl text-gray-900'>My Trips</h2>
+          <p className='text-gray-500 text-sm mt-1'>Your saved itineraries — click any trip to view or share it.</p>
+        </div>
+        <Button asChild>
+          <Link to='/create-trip'>+ New Trip</Link>
+        </Button>
+      </div>
 
-      {failed && <p className='mt-10 text-gray-500'>Could not load your trips. Please refresh the page.</p>}
+      {failed && (
+        <div className='rounded-xl border border-red-100 bg-red-50 p-6 text-center text-sm text-red-600'>
+          Could not load your trips. Please refresh the page.
+        </div>
+      )}
 
+      {/* Skeletons */}
       {!failed && trips === null && (
-        <div className='grid grid-cols-2 mt-10 md:grid-cols-3 gap-5'>
+        <div className='grid grid-cols-2 md:grid-cols-3 gap-5'>
           {[1, 2, 3, 4, 5, 6].map((n) => (
-            <div key={n} className='h-[250px] w-full bg-slate-200 animate-pulse rounded-xl' />
+            <div key={n} className='flex flex-col gap-2'>
+              <div className='h-[220px] w-full bg-gray-100 animate-pulse rounded-2xl' />
+              <div className='h-4 w-3/4 bg-gray-100 animate-pulse rounded' />
+              <div className='h-3 w-1/2 bg-gray-100 animate-pulse rounded' />
+            </div>
           ))}
         </div>
       )}
 
+      {/* Empty state */}
       {trips?.length === 0 && (
-        <div className='mt-10 text-gray-500'>
-          <p>You have no trips yet.</p>
-          <Button asChild className='mt-4'>
-            <Link to='/create-trip'>Plan your first trip</Link>
+        <div className='flex flex-col items-center justify-center py-24 text-center'>
+          <p className='text-5xl mb-4'>✈️</p>
+          <h3 className='font-semibold text-lg text-gray-800'>No trips yet</h3>
+          <p className='text-gray-500 text-sm mt-2 mb-6'>Plan your first adventure and it will appear here.</p>
+          <Button asChild>
+            <Link to='/create-trip'>Plan my first trip</Link>
           </Button>
         </div>
       )}
 
+      {/* Trip grid */}
       {trips?.length > 0 && (
-        <div className='grid grid-cols-2 mt-10 md:grid-cols-3 gap-5'>
+        <div className='grid grid-cols-2 md:grid-cols-3 gap-5'>
           {trips.map((trip) => (
             <UserTripCardItem trip={trip} key={trip.id} onDelete={() => onDelete(trip)} />
           ))}

@@ -45,69 +45,106 @@ function CreateTrip() {
   }
 
   const choiceClass = (selected) =>
-    `p-4 border cursor-pointer rounded-lg hover:shadow-lg ${selected ? 'shadow-lg border-black' : ''}`
+    `p-4 border cursor-pointer rounded-xl hover:shadow-md transition-all ${
+      selected ? 'shadow-md border-[#f56551] bg-[#f56551]/5' : 'border-gray-200 hover:border-gray-300'
+    }`
 
   return (
-    <div className='sm:px-10 md:px-32 lg:px-56 xl:px-72 px-5 mt-10'>
-      <h2 className='font-bold text-3xl'>Tell us your travel preferences 🏕️🌴</h2>
-      <p className='mt-3 text-gray-500 text-xl'>
-        Just provide some basic information, and our trip planner will generate a customized itinerary based on your preferences.
-      </p>
+    <div className='sm:px-10 md:px-32 lg:px-56 xl:px-72 px-5 mt-10 pb-20'>
+      {/* Page header */}
+      <div className='mb-10'>
+        <h2 className='font-bold text-3xl text-gray-900'>Plan Your Next Trip 🗺️</h2>
+        <p className='mt-2 text-gray-500 text-base max-w-lg'>
+          Fill in your preferences and TripForge will generate a full day-by-day itinerary with hotels and attractions.
+        </p>
+      </div>
 
-      <div className='mt-20 flex flex-col gap-10'>
+      <div className='flex flex-col gap-10'>
+        {/* Destination */}
         <div>
-          <h2 className='text-xl my-3 font-medium'>What is destination of choice?</h2>
+          <label className='block text-sm font-semibold text-gray-700 mb-2'>
+            📍 Where do you want to go?
+          </label>
           <PlacesAutocomplete onChange={setDestination} />
         </div>
 
+        {/* Duration */}
         <div>
-          <h2 className='text-xl my-3 font-medium'>How many days are you planning your trip?</h2>
+          <label className='block text-sm font-semibold text-gray-700 mb-2'>
+            📅 How many days? ({MIN_DAYS}–{MAX_DAYS})
+          </label>
           <Input
-            placeholder='Ex.3'
+            placeholder={`Enter days (${MIN_DAYS}–${MAX_DAYS})`}
             type='number'
             min={MIN_DAYS}
             max={MAX_DAYS}
             value={days}
             onChange={(e) => setDays(e.target.value)}
+            className='max-w-xs'
           />
         </div>
-      </div>
 
-      <div>
-        <h2 className='text-xl my-3 font-medium'>What is Your Budget?</h2>
-        <div className='grid grid-cols-3 gap-5 mt-5'>
-          {BUDGET_OPTIONS.map((item) => (
-            <div key={item.id} onClick={() => setBudget(item.id)} className={choiceClass(budget === item.id)}>
-              <h2 className='text-4xl'>{item.icon}</h2>
-              <h2 className='font-bold text-lg'>{item.title}</h2>
-              <h2 className='text-sm text-gray-500'>{item.desc}</h2>
-            </div>
-          ))}
+        {/* Budget */}
+        <div>
+          <label className='block text-sm font-semibold text-gray-700 mb-3'>💰 What is your budget?</label>
+          <div className='grid grid-cols-1 sm:grid-cols-3 gap-4'>
+            {BUDGET_OPTIONS.map((item) => (
+              <div key={item.id} onClick={() => setBudget(item.id)} className={choiceClass(budget === item.id)}>
+                <h2 className='text-3xl mb-2'>{item.icon}</h2>
+                <h2 className='font-semibold text-gray-900'>{item.title}</h2>
+                <p className='text-sm text-gray-500 mt-1'>{item.desc}</p>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
 
-      <div>
-        <h2 className='text-xl my-3 font-medium'>Who do you plan on traveling with on your next adventure?</h2>
-        <div className='grid grid-cols-3 gap-5 mt-5'>
-          {TRAVELER_OPTIONS.map((item) => (
-            <div key={item.id} onClick={() => setTravelers(item.id)} className={choiceClass(travelers === item.id)}>
-              <h2 className='text-4xl'>{item.icon}</h2>
-              <h2 className='font-bold text-lg'>{item.title}</h2>
-              <h2 className='text-sm text-gray-500'>{item.desc}</h2>
-            </div>
-          ))}
+        {/* Travelers */}
+        <div>
+          <label className='block text-sm font-semibold text-gray-700 mb-3'>🧳 Who is travelling?</label>
+          <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
+            {TRAVELER_OPTIONS.map((item) => (
+              <div key={item.id} onClick={() => setTravelers(item.id)} className={choiceClass(travelers === item.id)}>
+                <h2 className='text-3xl mb-2'>{item.icon}</h2>
+                <h2 className='font-semibold text-gray-900'>{item.title}</h2>
+                <p className='text-xs text-gray-500 mt-1'>{item.desc}</p>
+                <p className='text-xs text-[#f56551] mt-1 font-medium'>{item.people}</p>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
 
-      <div className='my-10 flex flex-col items-end gap-2'>
-        <label className='flex items-center gap-2 text-sm text-gray-500'>
-          <input type='checkbox' checked={fresh} onChange={(e) => setFresh(e.target.checked)} />
-          Make a brand-new plan (uses one of today's AI plans instead of a saved one)
-        </label>
-        <Button disabled={loading} onClick={onGenerateTrip}>
-          {loading ? <AiOutlineLoading3Quarters className='h-7 w-7 animate-spin' /> : 'Generate Trip'}
-        </Button>
-        {loading && <p className='text-sm text-gray-500'>Planning your trip. This can take up to a minute.</p>}
+        {/* Generate */}
+        <div className='flex flex-col items-start gap-3 mt-2'>
+          <label className='flex items-center gap-2 text-sm text-gray-500 cursor-pointer select-none'>
+            <input
+              type='checkbox'
+              checked={fresh}
+              onChange={(e) => setFresh(e.target.checked)}
+              className='accent-[#f56551]'
+            />
+            Generate a brand-new plan (skips shared cache — uses one AI credit)
+          </label>
+          <Button
+            disabled={loading}
+            onClick={onGenerateTrip}
+            size='lg'
+            className='w-full sm:w-auto px-10'
+          >
+            {loading ? (
+              <span className='flex items-center gap-2'>
+                <AiOutlineLoading3Quarters className='h-5 w-5 animate-spin' />
+                Planning your trip…
+              </span>
+            ) : (
+              'Generate Trip ✨'
+            )}
+          </Button>
+          {loading && (
+            <p className='text-sm text-gray-400'>
+              Calling Gemini AI and validating results — this takes up to 30 seconds.
+            </p>
+          )}
+        </div>
       </div>
     </div>
   )
