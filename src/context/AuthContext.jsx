@@ -1,18 +1,33 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { onAuthStateChanged, signInWithPopup, signOut as firebaseSignOut } from 'firebase/auth'
+import {
+  onAuthStateChanged,
+  signInWithRedirect,
+  getRedirectResult,
+  signOut as firebaseSignOut,
+} from 'firebase/auth'
 import { toast } from 'sonner'
 import { auth, firebaseReady, googleProvider } from '@/lib/firebase'
 
 const AuthContext = createContext(null)
 
-// Firebase Auth is the single source of truth for "who is logged in".
-// Our code stores nothing about the user in the browser itself; Firebase manages the session.
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(firebaseReady)
 
   useEffect(() => {
     if (!auth) return undefined
+
+    // Handle the redirect result when the user comes back from Google
+    getRedirectResult(auth).catch((err) => {
+      if (
+        err?.code !== 'auth/popup-closed-by-user' &&
+        err?.code !== 'auth/cancelled-popup-request'
+      ) {
+        console.error(err)
+        toast('Sign-in failed. Please try again.')
+      }
+    })
+
     return onAuthStateChanged(auth, (next) => {
       setUser(next)
       setLoading(false)
@@ -25,11 +40,10 @@ export function AuthProvider({ children }) {
       return
     }
     try {
-      await signInWithPopup(auth, googleProvider)
+      await signInWithRedirect(auth, googleProvider)
     } catch (err) {
-      if (err?.code === 'auth/popup-closed-by-user' || err?.code === 'auth/cancelled-popup-request') return
       console.error(err)
-      toast('Sign-in failed. Check that Google sign-in is enabled in Firebase and that this domain is authorized.')
+      toast('Sign-in failed. Please try again.')
     }
   }, [])
 
