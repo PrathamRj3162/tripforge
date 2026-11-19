@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import {
   onAuthStateChanged,
+  signInWithPopup,
   signInWithRedirect,
   getRedirectResult,
   signOut as firebaseSignOut,
@@ -17,16 +18,18 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     if (!auth) return undefined
 
-    // Handle the redirect result when the user comes back from Google
-    getRedirectResult(auth).catch((err) => {
-      if (
-        err?.code !== 'auth/popup-closed-by-user' &&
-        err?.code !== 'auth/cancelled-popup-request'
-      ) {
-        console.error(err)
-        toast('Sign-in failed. Please try again.')
-      }
-    })
+    // Pick up user after a redirect sign-in
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result?.user) setUser(result.user)
+      })
+      .catch((err) => {
+        const ignored = ['auth/popup-closed-by-user', 'auth/cancelled-popup-request', 'auth/no-auth-event']
+        if (!ignored.includes(err?.code)) {
+          console.error('[Auth] redirect result error:', err?.code, err?.message)
+          toast('Sign-in failed. Please try again.')
+        }
+      })
 
     return onAuthStateChanged(auth, (next) => {
       setUser(next)
@@ -36,14 +39,27 @@ export function AuthProvider({ children }) {
 
   const signIn = useCallback(async () => {
     if (!auth) {
-      toast('Firebase is not configured yet. See the README.')
+      toast('Firebase is not configured yet.')
       return
     }
+    // Try popup first (fastest UX). If the browser blocks popups, fall back to redirect.
     try {
-      await signInWithRedirect(auth, googleProvider)
+      await signInWithPopup(auth, googleProvider)
     } catch (err) {
-      console.error(err)
-      toast('Sign-in failed. Please try again.')
+      const silentCodes = ['auth/popup-closed-by-user', 'auth/cancelled-popup-request']
+      if (silentCodes.includes(err?.code)) return
+      // popup-blocked or any other issue → use redirect flow
+      if (err?.code === 'auth/popup-blocked' || err?.code === 'auth/operation-not-supported-in-this-environment') {
+        try {
+          await signInWithRedirect(auth, googleProvider)
+        } catch (redirectErr) {
+          console.error('[Auth] redirect fallback error:', redirectErr)
+          toast('Sign-in failed. Please try again.')
+        }
+      } else {
+        console.error('[Auth] popup error:', err?.code, err?.message)
+        toast('Sign-in failed. Please try again.')
+      }
     }
   }, [])
 
