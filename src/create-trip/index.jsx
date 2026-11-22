@@ -1,20 +1,29 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
-import { AiOutlineLoading3Quarters } from 'react-icons/ai'
-import { FiMapPin, FiCalendar, FiDollarSign, FiUsers, FiCpu } from 'react-icons/fi'
+import { FiLoader, FiMapPin, FiUsers, FiSend } from 'react-icons/fi'
+import { BsCurrencyDollar } from 'react-icons/bs'
+import { MdWeekend, MdFamilyRestroom } from 'react-icons/md'
+import { IoPeopleOutline } from 'react-icons/io5'
+import { BiSolidPlane } from 'react-icons/bi'
 import PlacesAutocomplete from '@/components/custom/PlacesAutocomplete'
 import { Input } from '@/components/ui/input'
 import { BUDGET_OPTIONS, TRAVELER_OPTIONS } from '@/constants/options'
 import { generateTrip } from '@/lib/api'
 import { MAX_DAYS, MIN_DAYS } from '../../shared/limits.js'
 
-const STEPS = [
-  { number: 1, label: 'Destination', icon: <FiMapPin className='h-4 w-4' /> },
-  { number: 2, label: 'Duration', icon: <FiCalendar className='h-4 w-4' /> },
-  { number: 3, label: 'Budget', icon: <FiDollarSign className='h-4 w-4' /> },
-  { number: 4, label: 'Travelers', icon: <FiUsers className='h-4 w-4' /> },
-]
+const BUDGET_META = {
+  cheap:    { icon: <BsCurrencyDollar className='h-5 w-5'/>, color: 'text-emerald-600', bg: 'bg-emerald-50', label: 'Budget', hint: 'Hostels, street food, local transport' },
+  moderate: { icon: <><BsCurrencyDollar className='h-5 w-5'/><BsCurrencyDollar className='h-5 w-5 -ml-2'/></>, color: 'text-blue-600', bg: 'bg-blue-50', label: 'Standard', hint: '3-star hotels, cafes, mixed transport' },
+  luxury:   { icon: <><BsCurrencyDollar className='h-5 w-5'/><BsCurrencyDollar className='h-5 w-5 -ml-2'/><BsCurrencyDollar className='h-5 w-5 -ml-2'/></>, color: 'text-amber-600', bg: 'bg-amber-50', label: 'Luxury', hint: '5-star hotels, fine dining, private transfers' },
+}
+
+const TRAVELER_META = {
+  solo:    { icon: <BiSolidPlane className='h-6 w-6'/>, color: 'text-violet-600', bg: 'bg-violet-50' },
+  couple:  { icon: <MdWeekend className='h-6 w-6'/>, color: 'text-pink-600', bg: 'bg-pink-50' },
+  family:  { icon: <MdFamilyRestroom className='h-6 w-6'/>, color: 'text-orange-600', bg: 'bg-orange-50' },
+  friends: { icon: <IoPeopleOutline className='h-6 w-6'/>, color: 'text-cyan-600', bg: 'bg-cyan-50' },
+}
 
 function CreateTrip() {
   const [destination, setDestination] = useState(null)
@@ -25,213 +34,193 @@ function CreateTrip() {
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
 
-  const onGenerateTrip = async () => {
+  const onGenerate = async () => {
     if (!destination || !days || !budget || !travelers) {
-      toast('Please fill all details, and pick the destination from the list')
+      toast('Fill all fields and select destination from the dropdown.')
       return
     }
-    const numberOfDays = Number(days)
-    if (!Number.isInteger(numberOfDays) || numberOfDays < MIN_DAYS || numberOfDays > MAX_DAYS) {
-      toast(`Please enter between ${MIN_DAYS} and ${MAX_DAYS} days`)
+    const n = Number(days)
+    if (!Number.isInteger(n) || n < MIN_DAYS || n > MAX_DAYS) {
+      toast(`Days must be ${MIN_DAYS}–${MAX_DAYS}`)
       return
     }
     setLoading(true)
     try {
-      const result = await generateTrip({ destination: destination.label, days: numberOfDays, budget, travelers, fresh })
+      const result = await generateTrip({ destination: destination.label, days: n, budget, travelers, fresh })
       if (!result.cached && typeof result.remainingToday === 'number') {
-        toast(`Trip ready. You have ${result.remainingToday} AI plans left today.`)
+        toast(`Done! ${result.remainingToday} AI plans left today.`)
       }
       navigate(`/view-trip/${result.tripId}`)
     } catch (err) {
       console.error(err)
-      toast(err?.message || 'Something went wrong while generating the trip.')
+      toast(err?.message || 'Something went wrong.')
       setLoading(false)
     }
   }
 
-  const cardCls = (selected) =>
-    `relative p-4 border-2 cursor-pointer rounded-xl transition-all duration-150 ${
-      selected
-        ? 'border-[#f56551] bg-[#fff5f3] shadow-sm'
-        : 'border-gray-200 hover:border-gray-300 bg-white hover:bg-gray-50'
-    }`
-
-  const activeStep = !destination ? 1 : !days ? 2 : !budget ? 3 : 4
+  const isReady = destination && days && budget && travelers
 
   return (
-    <div className='min-h-screen bg-gray-50/50'>
-      {/* Page banner */}
-      <div className='bg-white border-b border-gray-100'>
-        <div className='mx-auto max-w-3xl px-5 py-8 md:py-10'>
-          <div className='flex items-center gap-3 mb-2'>
-            <span className='flex h-10 w-10 items-center justify-center rounded-xl bg-[#f56551]/10'>
-              <FiCpu className='h-5 w-5 text-[#f56551]' />
-            </span>
-            <div>
-              <h1 className='font-bold text-2xl text-gray-900'>Plan Your Trip</h1>
-              <p className='text-sm text-gray-500 mt-0.5'>Let AI craft a perfect itinerary in seconds</p>
-            </div>
-          </div>
+    <div className='min-h-screen bg-white'>
+      {/* Top bar */}
+      <div className='border-b border-gray-100 bg-white'>
+        <div className='mx-auto max-w-2xl px-5 py-6'>
+          <h1 className='text-2xl font-bold text-gray-900'>Plan a trip</h1>
+          <p className='text-sm text-gray-400 mt-1'>Fill in your details — we'll build the full itinerary.</p>
+        </div>
+      </div>
 
-          {/* Step progress */}
-          <div className='flex items-center gap-2 mt-6 overflow-x-auto pb-1'>
-            {STEPS.map((step, idx) => {
-              const done = activeStep > step.number
-              const active = activeStep === step.number
+      <div className='mx-auto max-w-2xl px-5 py-8 pb-24 space-y-10'>
+
+        {/* Destination */}
+        <div>
+          <div className='flex items-center gap-2 mb-3'>
+            <FiMapPin className='h-4 w-4 text-gray-400' />
+            <span className='text-sm font-semibold text-gray-700 uppercase tracking-wider'>Destination</span>
+          </div>
+          <PlacesAutocomplete onChange={setDestination} />
+          {destination && (
+            <p className='mt-2 text-xs text-emerald-600'>✓ {destination.label}</p>
+          )}
+        </div>
+
+        {/* Duration */}
+        <div>
+          <div className='flex items-center gap-2 mb-3'>
+            <span className='text-sm font-semibold text-gray-700 uppercase tracking-wider'>Duration</span>
+            <span className='text-xs text-gray-400'>({MIN_DAYS}–{MAX_DAYS} days)</span>
+          </div>
+          <div className='flex items-center gap-3'>
+            <Input
+              type='number'
+              min={MIN_DAYS}
+              max={MAX_DAYS}
+              placeholder='5'
+              value={days}
+              onChange={(e) => setDays(e.target.value)}
+              className='w-24 text-center text-lg font-semibold h-11 border-gray-200 focus:border-gray-400 focus:ring-0 rounded-lg'
+            />
+            <span className='text-sm text-gray-500'>nights / days</span>
+          </div>
+        </div>
+
+        {/* Budget */}
+        <div>
+          <div className='flex items-center gap-2 mb-3'>
+            <span className='text-sm font-semibold text-gray-700 uppercase tracking-wider'>Budget</span>
+          </div>
+          <div className='grid grid-cols-3 gap-3'>
+            {BUDGET_OPTIONS.map((item) => {
+              const m = BUDGET_META[item.id]
+              const sel = budget === item.id
               return (
-                <div key={step.number} className='flex items-center gap-2 shrink-0'>
-                  <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                    done ? 'bg-[#f56551] text-white' :
-                    active ? 'bg-[#f56551]/10 text-[#f56551] border border-[#f56551]/30' :
-                    'bg-gray-100 text-gray-400'
-                  }`}>
-                    {step.icon}
-                    {step.label}
-                  </div>
-                  {idx < STEPS.length - 1 && (
-                    <div className={`h-px w-6 ${done ? 'bg-[#f56551]' : 'bg-gray-200'}`} />
+                <button
+                  key={item.id}
+                  type='button'
+                  onClick={() => setBudget(item.id)}
+                  className={`relative text-left p-4 rounded-xl border-2 transition-all ${
+                    sel
+                      ? 'border-gray-900 bg-white shadow-sm'
+                      : 'border-gray-100 hover:border-gray-200 bg-gray-50/50'
+                  }`}
+                >
+                  {sel && (
+                    <span className='absolute top-2.5 right-2.5 h-4 w-4 rounded-full bg-gray-900 flex items-center justify-center'>
+                      <svg className='h-2.5 w-2.5 text-white' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={3} d='M5 13l4 4L19 7' />
+                      </svg>
+                    </span>
                   )}
-                </div>
+                  <span className={`inline-flex items-center ${m.bg} ${m.color} rounded-lg p-2 mb-3`}>
+                    {m.icon}
+                  </span>
+                  <p className='font-semibold text-sm text-gray-900'>{m.label}</p>
+                  <p className='text-xs text-gray-400 mt-0.5 leading-relaxed'>{m.hint}</p>
+                </button>
               )
             })}
           </div>
         </div>
-      </div>
 
-      {/* Form body */}
-      <div className='mx-auto max-w-3xl px-5 py-10 pb-20'>
-        <div className='flex flex-col gap-10'>
-
-          {/* 1 — Destination */}
-          <section>
-            <div className='flex items-center gap-2 mb-3'>
-              <span className='flex h-7 w-7 items-center justify-center rounded-full bg-[#f56551] text-white text-xs font-bold shrink-0'>1</span>
-              <h2 className='font-semibold text-gray-900'>Where do you want to go?</h2>
-            </div>
-            <PlacesAutocomplete onChange={setDestination} />
-            {destination && (
-              <p className='mt-2 text-xs text-green-600 font-medium'>✓ {destination.label}</p>
-            )}
-          </section>
-
-          {/* 2 — Duration */}
-          <section>
-            <div className='flex items-center gap-2 mb-3'>
-              <span className='flex h-7 w-7 items-center justify-center rounded-full bg-[#f56551] text-white text-xs font-bold shrink-0'>2</span>
-              <h2 className='font-semibold text-gray-900'>
-                How many days?{' '}
-                <span className='text-gray-400 font-normal text-sm'>({MIN_DAYS}–{MAX_DAYS})</span>
-              </h2>
-            </div>
-            <div className='flex items-center gap-3'>
-              <Input
-                placeholder='e.g. 5'
-                type='number'
-                min={MIN_DAYS}
-                max={MAX_DAYS}
-                value={days}
-                onChange={(e) => setDays(e.target.value)}
-                className='max-w-[140px] text-lg font-semibold text-center h-12 rounded-xl border-2 focus:border-[#f56551]'
-              />
-              <span className='text-sm text-gray-500'>days of travel</span>
-            </div>
-          </section>
-
-          {/* 3 — Budget */}
-          <section>
-            <div className='flex items-center gap-2 mb-3'>
-              <span className='flex h-7 w-7 items-center justify-center rounded-full bg-[#f56551] text-white text-xs font-bold shrink-0'>3</span>
-              <h2 className='font-semibold text-gray-900'>What is your budget?</h2>
-            </div>
-            <div className='grid grid-cols-1 sm:grid-cols-3 gap-3'>
-              {BUDGET_OPTIONS.map((item) => (
-                <div key={item.id} onClick={() => setBudget(item.id)} className={cardCls(budget === item.id)}>
-                  {budget === item.id && (
-                    <span className='absolute top-2.5 right-2.5 h-5 w-5 rounded-full bg-[#f56551] flex items-center justify-center'>
-                      <svg className='h-3 w-3 text-white' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+        {/* Travelers */}
+        <div>
+          <div className='flex items-center gap-2 mb-3'>
+            <FiUsers className='h-4 w-4 text-gray-400' />
+            <span className='text-sm font-semibold text-gray-700 uppercase tracking-wider'>Traveling as</span>
+          </div>
+          <div className='grid grid-cols-2 gap-3'>
+            {TRAVELER_OPTIONS.map((item) => {
+              const m = TRAVELER_META[item.id]
+              const sel = travelers === item.id
+              return (
+                <button
+                  key={item.id}
+                  type='button'
+                  onClick={() => setTravelers(item.id)}
+                  className={`relative text-left flex items-center gap-4 p-4 rounded-xl border-2 transition-all ${
+                    sel
+                      ? 'border-gray-900 bg-white shadow-sm'
+                      : 'border-gray-100 hover:border-gray-200 bg-gray-50/50'
+                  }`}
+                >
+                  {sel && (
+                    <span className='absolute top-2.5 right-2.5 h-4 w-4 rounded-full bg-gray-900 flex items-center justify-center'>
+                      <svg className='h-2.5 w-2.5 text-white' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
                         <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={3} d='M5 13l4 4L19 7' />
                       </svg>
                     </span>
                   )}
-                  <div className='text-3xl mb-2'>{item.icon}</div>
-                  <h3 className='font-semibold text-gray-900'>{item.title}</h3>
-                  <p className='text-sm text-gray-500 mt-1'>{item.desc}</p>
-                </div>
-              ))}
-            </div>
-          </section>
+                  <span className={`${m.bg} ${m.color} p-2.5 rounded-xl shrink-0`}>{m.icon}</span>
+                  <div>
+                    <p className='font-semibold text-sm text-gray-900'>{item.title}</p>
+                    <p className='text-xs text-gray-400 mt-0.5'>{item.people}</p>
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+        </div>
 
-          {/* 4 — Travelers */}
-          <section>
-            <div className='flex items-center gap-2 mb-3'>
-              <span className='flex h-7 w-7 items-center justify-center rounded-full bg-[#f56551] text-white text-xs font-bold shrink-0'>4</span>
-              <h2 className='font-semibold text-gray-900'>Who is traveling?</h2>
-            </div>
-            <div className='grid grid-cols-2 md:grid-cols-4 gap-3'>
-              {TRAVELER_OPTIONS.map((item) => (
-                <div key={item.id} onClick={() => setTravelers(item.id)} className={cardCls(travelers === item.id)}>
-                  {travelers === item.id && (
-                    <span className='absolute top-2.5 right-2.5 h-5 w-5 rounded-full bg-[#f56551] flex items-center justify-center'>
-                      <svg className='h-3 w-3 text-white' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={3} d='M5 13l4 4L19 7' />
-                      </svg>
-                    </span>
-                  )}
-                  <div className='text-2xl mb-2'>{item.icon}</div>
-                  <h3 className='font-semibold text-sm text-gray-900'>{item.title}</h3>
-                  <p className='text-xs text-gray-500 mt-1 leading-relaxed'>{item.desc}</p>
-                  <p className='text-xs text-[#f56551] mt-1.5 font-semibold'>{item.people}</p>
-                </div>
-              ))}
-            </div>
-          </section>
+        {/* Options + generate */}
+        <div className='pt-2'>
+          <label className='flex items-center gap-2.5 text-sm text-gray-500 cursor-pointer select-none mb-6'>
+            <input
+              type='checkbox'
+              checked={fresh}
+              onChange={(e) => setFresh(e.target.checked)}
+              className='h-4 w-4 rounded border-gray-300 accent-gray-900'
+            />
+            Skip cache — generate a fresh plan (uses 1 AI credit)
+          </label>
 
-          {/* Generate */}
-          <section className='bg-white rounded-2xl border border-gray-100 p-6 shadow-sm'>
-            <label className='flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none mb-5'>
-              <input
-                type='checkbox'
-                checked={fresh}
-                onChange={(e) => setFresh(e.target.checked)}
-                className='accent-[#f56551] h-4 w-4'
-              />
-              <span>
-                Generate a fresh plan{' '}
-                <span className='text-gray-400'>(skips cached results — uses 1 AI credit)</span>
-              </span>
-            </label>
-
-            <button
-              type='button'
-              disabled={loading}
-              onClick={onGenerateTrip}
-              className='w-full flex items-center justify-center gap-3 rounded-xl bg-[#f56551] hover:bg-[#e0533f] active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold text-base py-4 transition-all shadow-md hover:shadow-lg'
-            >
-              {loading ? (
-                <>
-                  <AiOutlineLoading3Quarters className='h-5 w-5 animate-spin shrink-0' />
-                  Planning your trip…
-                </>
-              ) : (
-                <>
-                  <FiCpu className='h-5 w-5 shrink-0' />
-                  Generate My Trip ✨
-                </>
-              )}
-            </button>
-
-            {loading && (
-              <div className='mt-4'>
-                <div className='flex justify-between text-xs text-gray-400 mb-1.5'>
-                  <span>Calling Gemini AI…</span>
-                  <span>up to 30s</span>
-                </div>
-                <div className='h-1.5 bg-gray-100 rounded-full overflow-hidden'>
-                  <div className='h-full bg-[#f56551] rounded-full animate-pulse w-2/3' />
-                </div>
-              </div>
+          <button
+            type='button'
+            disabled={loading || !isReady}
+            onClick={onGenerate}
+            className={`w-full flex items-center justify-center gap-3 py-4 rounded-xl font-semibold text-base transition-all ${
+              isReady && !loading
+                ? 'bg-gray-900 hover:bg-gray-800 text-white shadow-md hover:shadow-lg active:scale-[0.99]'
+                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+            }`}
+          >
+            {loading ? (
+              <>
+                <FiLoader className='h-5 w-5 animate-spin' />
+                Building your itinerary…
+              </>
+            ) : (
+              <>
+                <FiSend className='h-5 w-5' />
+                Generate itinerary
+              </>
             )}
-          </section>
+          </button>
+
+          {loading && (
+            <p className='text-center text-xs text-gray-400 mt-3'>
+              Calling Gemini AI — usually takes 10–30 seconds
+            </p>
+          )}
         </div>
       </div>
     </div>
